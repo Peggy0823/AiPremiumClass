@@ -2,6 +2,7 @@ import csv
 import jieba
 from sklearn.feature_extraction.text import TfidfVectorizer  #feature_extraction 特征提取
 from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 def load_data(filename):
     # 图书的评论信息集合
@@ -30,14 +31,35 @@ if __name__ == '__main__':
     book_comments = load_data("李思佳/week05/doubanbook_fixed.txt")
     print(len(book_comments))
 
+    # 提取书名和评论文本
+    book_names = []
+    book_comms = []
+    for book, comments in book_comments.items():
+        book_names.append(book)
+        book_comms.append(comments)
+
     #构建TF-IDF特征矩阵
     vectorizer = TfidfVectorizer(stop_words=stop_words)
-    tfidf_matrix = vectorizer.fit_transform([' '.join(comments) for comments in book_comments.values()])  #返回基于tfidf的得分矩阵
+    tfidf_matrix = vectorizer.fit_transform([' '.join(comments) for comments in book_comms])  #返回基于tfidf的得分矩阵
     # print(tfidf_matrix.shape)
     # print(vectorizer.get_feature_names_out) # 获取关键词信息，会过滤重复项
 
     #分析矩阵的每一行的非0数值和所有行做余弦相似度的计算
     similarity_matrix = cosine_similarity(tfidf_matrix)
-    print(similarity_matrix.shape)
+    # print(similarity_matrix.shape)
+
+    # 输入要推荐的图书名称
+    book_list = list[book_comments.keys()]
+    print(book_list)
+    book_name = input("请输入图书名称：")
+    book_idx = book_names.index(book_name)
+
+    # 获取与输入图书最相似的图书
+    recommend_book_idx = np.argsort(-similarity_matrix[book_idx])[1:11]
+    for idx in recommend_book_idx:
+        print(f" 《{book_names[idx]}》\t 相似度：{similarity_matrix[book_idx][idx]:.4f}")
+    print()
+
+
 
 
